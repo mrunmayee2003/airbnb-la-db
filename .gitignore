@@ -1,0 +1,5 @@
+data/
+__pycache__/
+*.pyc
+.DS_Store
+results_SYNTHETIC_sample_DO_NOT_REPORT/

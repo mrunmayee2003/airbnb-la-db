@@ -1,0 +1,28 @@
+-- P4 | config: PK(listing_id, amenity_id) only | variant: citywide | Pool
+-- params: {'amenity': 'Pool', 'min_score': Decimal('4.8'), 'limit': 50}
+SELECT l.listing_id, l.name, l.room_type, l.review_score, l.price
+FROM amenity a
+JOIN listing_amenity la ON la.amenity_id = a.amenity_id
+JOIN listing l          ON l.listing_id = la.listing_id
+WHERE a.amenity_name = %(amenity)s
+  AND l.review_score >= %(min_score)s
+ORDER BY l.review_score DESC, l.price
+LIMIT %(limit)s
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Limit: 50 row(s)  (cost=13570 rows=50)
+    -> Nested loop inner join  (cost=13570 rows=47526)
+        -> Sort: l.review_score DESC, l.price  (cost=4857 rows=47526)
+            -> Filter: (l.review_score >= 4.80)  (cost=4857 rows=47526)
+                -> Table scan on l  (cost=4857 rows=47526)
+        -> Single-row covering index lookup on la using PRIMARY (listing_id = l.listing_id, amenity_id = '10')  (cost=0.25 rows=1)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Limit: 50 row(s)  (cost=13570 rows=50) (actual time=12.7..13 rows=50 loops=1)
+    -> Nested loop inner join  (cost=13570 rows=47526) (actual time=12.7..13 rows=50 loops=1)
+        -> Sort: l.review_score DESC, l.price  (cost=4857 rows=47526) (actual time=12.7..12.7 rows=423 loops=1)
+            -> Filter: (l.review_score >= 4.80)  (cost=4857 rows=47526) (actual time=0.013..7 rows=22925 loops=1)
+                -> Table scan on l  (cost=4857 rows=47526) (actual time=0.0129..5.5 rows=43781 loops=1)
+        -> Single-row covering index lookup on la using PRIMARY (listing_id = l.listing_id, amenity_id = '10')  (cost=0.25 rows=1) (actual time=557e-6..559e-6 rows=0.118 loops=423)
+

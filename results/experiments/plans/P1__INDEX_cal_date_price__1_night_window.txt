@@ -1,0 +1,21 @@
+-- P1 | config: INDEX(cal_date, price) | variant: 1 night window
+-- params: {'lo': '2026-10-15', 'hi': '2026-10-15'}
+SELECT listing_id, cal_date, price
+FROM calendar
+WHERE available = 1
+  AND price IS NOT NULL
+  AND cal_date BETWEEN %(lo)s AND %(hi)s
+ORDER BY price
+LIMIT 100
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Limit: 100 row(s)  (cost=33829 rows=100)
+    -> Filter: (calendar.available = 1)  (cost=33829 rows=7516)
+        -> Index range scan on calendar using xp_date_price over (cal_date = '2026-10-15' AND NULL < price), with index condition: ((calendar.cal_date = DATE'2026-10-15') and (calendar.price is not null))  (cost=33829 rows=75162)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Limit: 100 row(s)  (cost=33829 rows=100) (actual time=11.3..11.3 rows=100 loops=1)
+    -> Filter: (calendar.available = 1)  (cost=33829 rows=7516) (actual time=11.3..11.3 rows=100 loops=1)
+        -> Index range scan on calendar using xp_date_price over (cal_date = '2026-10-15' AND NULL < price), with index condition: ((calendar.cal_date = DATE'2026-10-15') and (calendar.price is not null))  (cost=33829 rows=75162) (actual time=11.3..11.3 rows=126 loops=1)
+

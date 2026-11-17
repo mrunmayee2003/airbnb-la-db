@@ -1,0 +1,174 @@
+{
+  "mysql_version": "26.7.0",
+  "tables": {
+    "neighbourhood": {
+      "expected": 270,
+      "loaded": 270,
+      "warnings": 0,
+      "seconds": 0.0,
+      "status": "OK"
+    },
+    "host": {
+      "expected": 20912,
+      "loaded": 20912,
+      "warnings": 0,
+      "seconds": 0.1,
+      "status": "OK"
+    },
+    "listing": {
+      "expected": 43781,
+      "loaded": 43781,
+      "warnings": 0,
+      "seconds": 0.2,
+      "status": "OK"
+    },
+    "amenity": {
+      "expected": 9437,
+      "loaded": 9437,
+      "warnings": 0,
+      "seconds": 0.1,
+      "status": "OK"
+    },
+    "listing_amenity": {
+      "expected": 1687885,
+      "loaded": 1687885,
+      "warnings": 0,
+      "seconds": 4.6,
+      "status": "OK"
+    },
+    "calendar": {
+      "expected": 15980081,
+      "loaded": 15980081,
+      "warnings": 0,
+      "seconds": 31.0,
+      "status": "OK"
+    },
+    "review": {
+      "expected": 1890200,
+      "loaded": 1890200,
+      "warnings": 0,
+      "seconds": 13.7,
+      "status": "OK"
+    }
+  },
+  "orphans": {
+    "listing.host_id": 0,
+    "listing.neighbourhood_id": 0,
+    "calendar.listing_id": 0,
+    "review.listing_id": 0,
+    "listing_amenity.listing_id": 0,
+    "listing_amenity.amenity_id": 0
+  },
+  "table_sizes": [
+    {
+      "table": "review",
+      "est_rows": 2013998,
+      "data_mb": 886.9,
+      "index_mb": 53.6
+    },
+    {
+      "table": "calendar",
+      "est_rows": 16031408,
+      "data_mb": 694.0,
+      "index_mb": 0.0
+    },
+    {
+      "table": "listing_amenity",
+      "est_rows": 1748659,
+      "data_mb": 94.7,
+      "index_mb": 50.6
+    },
+    {
+      "table": "listing",
+      "est_rows": 47526,
+      "data_mb": 6.5,
+      "index_mb": 4.0
+    },
+    {
+      "table": "amenity",
+      "est_rows": 9690,
+      "data_mb": 1.5,
+      "index_mb": 1.5
+    },
+    {
+      "table": "host",
+      "est_rows": 21505,
+      "data_mb": 1.5,
+      "index_mb": 0.0
+    },
+    {
+      "table": "neighbourhood",
+      "est_rows": 270,
+      "data_mb": 0.0,
+      "index_mb": 0.0
+    }
+  ],
+  "index_sizes": [
+    {
+      "table": "amenity",
+      "index": "PRIMARY",
+      "mb": 1.52
+    },
+    {
+      "table": "amenity",
+      "index": "uq_amenity_name",
+      "mb": 1.52
+    },
+    {
+      "table": "calendar",
+      "index": "PRIMARY",
+      "mb": 694.0
+    },
+    {
+      "table": "host",
+      "index": "PRIMARY",
+      "mb": 1.52
+    },
+    {
+      "table": "listing",
+      "index": "PRIMARY",
+      "mb": 6.52
+    },
+    {
+      "table": "listing",
+      "index": "fk_listing_host",
+      "mb": 2.52
+    },
+    {
+      "table": "listing",
+      "index": "fk_listing_nbhd",
+      "mb": 1.52
+    },
+    {
+      "table": "listing_amenity",
+      "index": "PRIMARY",
+      "mb": 94.67
+    },
+    {
+      "table": "listing_amenity",
+      "index": "idx_amenity_listing",
+      "mb": 50.58
+    },
+    {
+      "table": "neighbourhood",
+      "index": "PRIMARY",
+      "mb": 0.02
+    },
+    {
+      "table": "neighbourhood",
+      "index": "uq_neighbourhood_name",
+      "mb": 0.02
+    },
+    {
+      "table": "review",
+      "index": "PRIMARY",
+      "mb": 886.94
+    },
+    {
+      "table": "review",
+      "index": "fk_review_listing",
+      "mb": 53.64
+    }
+  ],
+  "valid": true
+}

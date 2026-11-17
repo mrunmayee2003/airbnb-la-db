@@ -1,0 +1,31 @@
+{
+  "innodb_buffer_pool_size": "2147483648",
+  "innodb_page_size": "16384",
+  "join_buffer_size": "262144",
+  "max_heap_table_size": "16777216",
+  "optimizer_switch": "index_merge=on,index_merge_union=on,index_merge_sort_union=on,index_merge_intersection=on,engine_condition_pushdown=on,index_condition_pushdown=on,mrr=on,mrr_cost_based=on,block_nested_loop=on,batched_key_access=off,materialization=on,semijoin=on,loosescan=on,firstmatch=on,duplicateweedout=on,subquery_materialization_cost_based=on,use_index_extensions=on,condition_fanout_filter=on,derived_merge=on,use_invisible_indexes=off,skip_scan=on,hash_join=on,subquery_to_derived=off,prefer_ordering_index=on,hypergraph_optimizer=off,derived_condition_pushdown=on,hash_set_operations=on",
+  "sort_buffer_size": "262144",
+  "tmp_table_size": "16777216",
+  "version": "26.7.0",
+  "table_rows": {
+    "neighbourhood": 270,
+    "host": 20912,
+    "listing": 43781,
+    "amenity": 9437,
+    "listing_amenity": 1687885,
+    "calendar": 15980081,
+    "review": 1890200
+  },
+  "runs_per_config": 5,
+  "args": {
+    "only": "W,P1,P2,P3,P3S,P4,Q3",
+    "runs": 5,
+    "start": "2026-10-15",
+    "compare_date": "2027-01-12",
+    "nbhd": "Venice",
+    "common_amenity": null,
+    "rare_amenity": "Pool,Private pool",
+    "p1_limit": 100,
+    "p3_window": "full"
+  }
+}

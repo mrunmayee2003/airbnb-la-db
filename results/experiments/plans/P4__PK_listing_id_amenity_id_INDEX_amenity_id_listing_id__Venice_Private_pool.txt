@@ -1,0 +1,32 @@
+-- P4 | config: PK(listing_id, amenity_id) + INDEX(amenity_id, listing_id) | variant: Venice | Private pool
+-- params: {'amenity': 'Private pool', 'nbhd': 'Venice', 'min_score': Decimal('4.8'), 'limit': 50}
+SELECT l.listing_id, l.name, l.room_type, l.review_score, l.price
+FROM amenity a
+JOIN listing_amenity la ON la.amenity_id = a.amenity_id
+JOIN listing l          ON l.listing_id = la.listing_id
+JOIN neighbourhood n    ON n.neighbourhood_id = l.neighbourhood_id
+WHERE a.amenity_name = %(amenity)s
+  AND n.name = %(nbhd)s
+  AND l.review_score >= %(min_score)s
+ORDER BY l.review_score DESC, l.price
+LIMIT %(limit)s
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Limit: 50 row(s)
+    -> Sort: l.review_score DESC, l.price, limit input to 50 row(s) per chunk
+        -> Stream results  (cost=231 rows=25.6)
+            -> Nested loop inner join  (cost=231 rows=25.6)
+                -> Covering index lookup on la using idx_amenity_listing (amenity_id = '88')  (cost=51.7 rows=511)
+                -> Filter: ((l.neighbourhood_id = '238') and (l.review_score >= 4.80))  (cost=0.25 rows=0.05)
+                    -> Single-row index lookup on l using PRIMARY (listing_id = la.listing_id)  (cost=0.25 rows=1)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Limit: 50 row(s)  (actual time=0.372..0.373 rows=6 loops=1)
+    -> Sort: l.review_score DESC, l.price, limit input to 50 row(s) per chunk  (actual time=0.372..0.372 rows=6 loops=1)
+        -> Stream results  (cost=231 rows=25.6) (actual time=0.0224..0.371 rows=6 loops=1)
+            -> Nested loop inner join  (cost=231 rows=25.6) (actual time=0.022..0.369 rows=6 loops=1)
+                -> Covering index lookup on la using idx_amenity_listing (amenity_id = '88')  (cost=51.7 rows=511) (actual time=0.017..0.0398 rows=511 loops=1)
+                -> Filter: ((l.neighbourhood_id = '238') and (l.review_score >= 4.80))  (cost=0.25 rows=0.05) (actual time=599e-6..600e-6 rows=0.0117 loops=511)
+                    -> Single-row index lookup on l using PRIMARY (listing_id = la.listing_id)  (cost=0.25 rows=1) (actual time=501e-6..518e-6 rows=1 loops=511)
+

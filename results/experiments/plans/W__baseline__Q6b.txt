@@ -1,0 +1,37 @@
+-- W | config: baseline | variant: Q6b
+-- params: {'snapshot': '2026-09-14'}
+SELECT l.room_type,
+       COUNT(*)                     AS reviewed_listings,
+       SUM(l.license IS NOT NULL)   AS with_license,
+       ROUND(100 * AVG(l.license IS NOT NULL), 1) AS pct_with_license
+FROM listing l
+WHERE EXISTS (SELECT 1 FROM review r
+              WHERE r.listing_id = l.listing_id
+                AND r.review_date >= DATE_SUB(%(snapshot)s, INTERVAL 12 MONTH)
+                AND r.review_date <  %(snapshot)s)
+GROUP BY l.room_type
+ORDER BY reviewed_listings DESC
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Sort: reviewed_listings DESC
+    -> Table scan on <temporary>
+        -> Aggregate using temporary table
+            -> Nested loop inner join  (cost=1.09e+9 rows=10.9e+9)
+                -> Table scan on l  (cost=4857 rows=47526)
+                -> Single-row index lookup on <subquery2> using <auto_distinct_key> (listing_id = l.listing_id)  (cost=272741..272741 rows=1)
+                    -> Materialize with deduplication  (cost=272741..272741 rows=228680)
+                        -> Filter: ((r.review_date >= <cache>(('2026-09-14' - interval 12 month))) and (r.review_date < DATE'2026-09-14'))  (cost=220050 rows=228680)
+                            -> Table scan on r  (cost=220050 rows=2.06e+6)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Sort: reviewed_listings DESC  (actual time=269..269 rows=4 loops=1)
+    -> Table scan on <temporary>  (actual time=269..269 rows=4 loops=1)
+        -> Aggregate using temporary table  (actual time=269..269 rows=4 loops=1)
+            -> Nested loop inner join  (cost=1.09e+9 rows=10.9e+9) (actual time=247..262 rows=24494 loops=1)
+                -> Table scan on l  (cost=4857 rows=47526) (actual time=0.0136..4.6 rows=43781 loops=1)
+                -> Single-row index lookup on <subquery2> using <auto_distinct_key> (listing_id = l.listing_id)  (cost=272741..272741 rows=1) (actual time=0.0058..0.00582 rows=0.559 loops=43781)
+                    -> Materialize with deduplication  (cost=272741..272741 rows=228680) (actual time=247..247 rows=24494 loops=1)
+                        -> Filter: ((r.review_date >= <cache>(('2026-09-14' - interval 12 month))) and (r.review_date < DATE'2026-09-14'))  (cost=220050 rows=228680) (actual time=170..220 rows=391721 loops=1)
+                            -> Table scan on r  (cost=220050 rows=2.06e+6) (actual time=0.53..177 rows=1.89e+6 loops=1)
+

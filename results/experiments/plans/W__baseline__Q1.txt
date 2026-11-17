@@ -1,0 +1,17 @@
+-- W | config: baseline | variant: Q1
+-- params: {'listing_id': 2708, 'start': '2026-09-14'}
+SELECT cal_date, available, price, minimum_nights
+FROM calendar
+WHERE listing_id = %(listing_id)s
+  AND cal_date BETWEEN %(start)s AND DATE_ADD(%(start)s, INTERVAL 89 DAY)
+ORDER BY cal_date
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Filter: ((calendar.listing_id = 2708) and (calendar.cal_date between '2026-09-14' and '2026-12-12'))  (cost=18.1 rows=89)
+    -> Index range scan on calendar using PRIMARY over (listing_id = 2708 AND '2026-09-14' <= cal_date <= '2026-12-12')  (cost=18.1 rows=89)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Filter: ((calendar.listing_id = 2708) and (calendar.cal_date between '2026-09-14' and '2026-12-12'))  (cost=18.1 rows=89) (actual time=0.00733..0.0177 rows=89 loops=1)
+    -> Index range scan on calendar using PRIMARY over (listing_id = 2708 AND '2026-09-14' <= cal_date <= '2026-12-12')  (cost=18.1 rows=89) (actual time=0.00704..0.00962 rows=89 loops=1)
+

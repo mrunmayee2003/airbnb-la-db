@@ -1,0 +1,13 @@
+-- P3 | config: INDEX(available, price) | variant: no LIMIT
+-- params: {}
+SELECT listing_id, cal_date, price FROM calendar WHERE available = 1 AND price IS NOT NULL ORDER BY price
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Filter: ((calendar.available = 1) and (calendar.price is not null))  (cost=1.51e+6 rows=7.46e+6)
+    -> Covering index range scan on calendar using xp_avail_price over (available = 1 AND NULL < price)  (cost=1.51e+6 rows=7.46e+6)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Filter: ((calendar.available = 1) and (calendar.price is not null))  (cost=1.5e+6 rows=7.46e+6) (actual time=0.444..1215 rows=9.43e+6 loops=1)
+    -> Covering index range scan on calendar using xp_avail_price over (available = 1 AND NULL < price)  (cost=1.5e+6 rows=7.46e+6) (actual time=0.444..888 rows=9.43e+6 loops=1)
+

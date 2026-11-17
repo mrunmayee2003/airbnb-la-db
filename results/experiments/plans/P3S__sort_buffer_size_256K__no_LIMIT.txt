@@ -1,0 +1,15 @@
+-- P3S | config: sort_buffer_size=256K | variant: no LIMIT
+-- params: {}
+SELECT listing_id, cal_date, price FROM calendar WHERE available = 1 AND price IS NOT NULL ORDER BY price
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Sort: calendar.price  (cost=1.61e+6 rows=16e+6)
+    -> Filter: ((calendar.available = 1) and (calendar.price is not null))  (cost=1.61e+6 rows=16e+6)
+        -> Table scan on calendar  (cost=1.61e+6 rows=16e+6)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Sort: calendar.price  (cost=1.61e+6 rows=16e+6) (actual time=3126..3330 rows=9.43e+6 loops=1)
+    -> Filter: ((calendar.available = 1) and (calendar.price is not null))  (cost=1.61e+6 rows=16e+6) (actual time=0.506..1783 rows=9.43e+6 loops=1)
+        -> Table scan on calendar  (cost=1.61e+6 rows=16e+6) (actual time=0.504..1343 rows=16e+6 loops=1)
+

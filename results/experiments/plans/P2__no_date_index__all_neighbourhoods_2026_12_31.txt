@@ -1,0 +1,34 @@
+-- P2 | config: no date index | variant: all neighbourhoods 2026-12-31
+-- params: {'date': '2026-12-31'}
+SELECT  n.name AS neighbourhood, COUNT(*) AS listings_marked_available
+FROM calendar c
+JOIN listing l       ON l.listing_id = c.listing_id
+JOIN neighbourhood n ON n.neighbourhood_id = l.neighbourhood_id
+WHERE c.cal_date = %(date)s
+  AND c.available = 1
+GROUP BY n.name
+ORDER BY listings_marked_available DESC
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Sort: listings_marked_available DESC
+    -> Stream results  (cost=22678 rows=270)
+        -> Group aggregate: count(0)  (cost=22678 rows=270)
+            -> Nested loop inner join  (cost=21579 rows=4770)
+                -> Nested loop inner join  (cost=4879 rows=47703)
+                    -> Covering index scan on n using uq_neighbourhood_name  (cost=27.2 rows=270)
+                    -> Covering index lookup on l using fk_listing_nbhd (neighbourhood_id = n.neighbourhood_id)  (cost=0.369 rows=177)
+                -> Filter: (c.available = 1)  (cost=0.25 rows=0.1)
+                    -> Single-row index lookup on c using PRIMARY (listing_id = l.listing_id, cal_date = DATE'2026-12-31')  (cost=0.25 rows=1)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Sort: listings_marked_available DESC  (actual time=64.4..64.5 rows=263 loops=1)
+    -> Stream results  (cost=22678 rows=270) (actual time=0.053..64.4 rows=263 loops=1)
+        -> Group aggregate: count(0)  (cost=22678 rows=270) (actual time=0.0526..64.4 rows=263 loops=1)
+            -> Nested loop inner join  (cost=21579 rows=4770) (actual time=0.014..62.5 rows=28688 loops=1)
+                -> Nested loop inner join  (cost=4879 rows=47703) (actual time=0.0113..4.68 rows=43781 loops=1)
+                    -> Covering index scan on n using uq_neighbourhood_name  (cost=27.2 rows=270) (actual time=0.007..0.04 rows=270 loops=1)
+                    -> Covering index lookup on l using fk_listing_nbhd (neighbourhood_id = n.neighbourhood_id)  (cost=0.369 rows=177) (actual time=0.00408..0.0125 rows=162 loops=270)
+                -> Filter: (c.available = 1)  (cost=0.25 rows=0.1) (actual time=0.00123..0.00126 rows=0.655 loops=43781)
+                    -> Single-row index lookup on c using PRIMARY (listing_id = l.listing_id, cal_date = DATE'2026-12-31')  (cost=0.25 rows=1) (actual time=0.00115..0.00117 rows=1 loops=43781)
+

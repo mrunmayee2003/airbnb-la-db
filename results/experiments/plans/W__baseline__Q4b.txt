@@ -1,0 +1,26 @@
+-- W | config: baseline | variant: Q4b
+-- params: {'date': '2026-12-31', 'nbhd': 'Venice'}
+SELECT n.name AS neighbourhood, COUNT(*) AS listings_marked_available
+FROM calendar c
+JOIN listing l       ON l.listing_id = c.listing_id
+JOIN neighbourhood n ON n.neighbourhood_id = l.neighbourhood_id
+WHERE c.cal_date = %(date)s
+  AND c.available = 1
+  AND n.name = %(nbhd)s
+GROUP BY n.name
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Group aggregate: count(0)  (cost=706 rows=1)
+    -> Nested loop inner join  (cost=672 rows=149)
+        -> Covering index lookup on l using fk_listing_nbhd (neighbourhood_id = '238')  (cost=150 rows=1491)
+        -> Filter: (c.available = 1)  (cost=0.25 rows=0.1)
+            -> Single-row index lookup on c using PRIMARY (listing_id = l.listing_id, cal_date = DATE'2026-12-31')  (cost=0.25 rows=1)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Group aggregate: count(0)  (cost=706 rows=1) (actual time=1.34..1.34 rows=1 loops=1)
+    -> Nested loop inner join  (cost=672 rows=149) (actual time=0.0108..1.32 rows=882 loops=1)
+        -> Covering index lookup on l using fk_listing_nbhd (neighbourhood_id = '238')  (cost=150 rows=1491) (actual time=0.00925..0.103 rows=1491 loops=1)
+        -> Filter: (c.available = 1)  (cost=0.25 rows=0.1) (actual time=735e-6..760e-6 rows=0.592 loops=1491)
+            -> Single-row index lookup on c using PRIMARY (listing_id = l.listing_id, cal_date = DATE'2026-12-31')  (cost=0.25 rows=1) (actual time=663e-6..677e-6 rows=1 loops=1491)
+

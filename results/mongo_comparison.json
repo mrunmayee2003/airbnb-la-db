@@ -1,0 +1,90 @@
+{
+  "1_listing_detail": {
+    "listing_id": 42409434,
+    "mysql": {
+      "median_ms": 6.604,
+      "round_trips": 3,
+      "rows": {
+        "listing": 1,
+        "amenities": 37,
+        "reviews": 20
+      }
+    },
+    "mongo": {
+      "median_ms": 0.74,
+      "round_trips": 1,
+      "amenities": 37,
+      "embedded_reviews": 20,
+      "plan": {
+        "winning_plan": "EXPRESS_IXSCAN[_id_]",
+        "docs_examined": 1,
+        "keys_examined": 1,
+        "returned": 1
+      }
+    }
+  },
+  "2_amenity_search": {
+    "params": {
+      "amenity": "Pool",
+      "nbhd": "Venice",
+      "min_score": "4.8"
+    },
+    "mysql": {
+      "median_ms": 2.364,
+      "rows": 19
+    },
+    "mongo": {
+      "median_ms": 3.86,
+      "rows": 19,
+      "plan": {
+        "winning_plan": "SORT > FETCH > IXSCAN[neighbourhood.name_1]",
+        "docs_examined": 1491,
+        "keys_examined": 1491,
+        "returned": 19
+      }
+    },
+    "same_listings": true
+  },
+  "3_avg_price_by_neighbourhood": {
+    "mysql": {
+      "median_ms": 25.134,
+      "groups": 263
+    },
+    "mongo": {
+      "median_ms": 15.479,
+      "groups": 263,
+      "pipeline": [
+        {
+          "$match": {
+            "price": {
+              "$ne": null
+            }
+          }
+        },
+        {
+          "$group": {
+            "_id": "$neighbourhood.name",
+            "listings": {
+              "$sum": 1
+            },
+            "avg_price": {
+              "$avg": "$price"
+            }
+          }
+        },
+        {
+          "$sort": {
+            "avg_price": -1
+          }
+        }
+      ]
+    },
+    "same_top_neighbourhood": true
+  },
+  "4_update_host_attribute": {
+    "host_id": 651318479,
+    "mysql_rows_matched": 1,
+    "mongo_documents_matched": 278,
+    "note": "Same no-op value written; shows how many copies must stay consistent."
+  }
+}

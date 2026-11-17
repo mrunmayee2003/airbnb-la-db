@@ -1,0 +1,34 @@
+-- W | config: baseline | variant: Q2
+-- params: {'min_listings': 50, 'limit': 25}
+SELECT n.name AS neighbourhood, n.group_name,
+       COUNT(*)                                        AS listings,
+       SUM(l.room_type = 'Entire home/apt')            AS entire_home,
+       ROUND(100 * AVG(l.room_type = 'Entire home/apt'), 1) AS pct_entire_home
+FROM listing l
+JOIN neighbourhood n ON n.neighbourhood_id = l.neighbourhood_id
+GROUP BY n.neighbourhood_id
+HAVING COUNT(*) >= %(min_listings)s
+ORDER BY pct_entire_home DESC, listings DESC
+LIMIT %(limit)s
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Limit: 25 row(s)
+    -> Sort: pct_entire_home DESC, listings DESC
+        -> Filter: (count(0) >= 50)
+            -> Stream results  (cost=27715 rows=270)
+                -> Group aggregate: count(0), avg((l.room_type = 'Entire home/apt')), count(0), sum((l.room_type = 'Entire home/apt'))  (cost=27715 rows=270)
+                    -> Nested loop inner join  (cost=16723 rows=47703)
+                        -> Index scan on n using PRIMARY  (cost=27.2 rows=270)
+                        -> Index lookup on l using fk_listing_nbhd (neighbourhood_id = n.neighbourhood_id)  (cost=44.2 rows=177)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Limit: 25 row(s)  (actual time=27.8..27.8 rows=25 loops=1)
+    -> Sort: pct_entire_home DESC, listings DESC  (actual time=27.8..27.8 rows=25 loops=1)
+        -> Filter: (`count(0)` >= 50)  (actual time=0.0796..27.7 rows=152 loops=1)
+            -> Stream results  (cost=27715 rows=270) (actual time=0.0262..27.7 rows=264 loops=1)
+                -> Group aggregate: count(0), avg((l.room_type = 'Entire home/apt')), count(0), sum((l.room_type = 'Entire home/apt'))  (cost=27715 rows=270) (actual time=0.0256..27.7 rows=264 loops=1)
+                    -> Nested loop inner join  (cost=16723 rows=47703) (actual time=0.0126..20.9 rows=43781 loops=1)
+                        -> Index scan on n using PRIMARY  (cost=27.2 rows=270) (actual time=0.00317..0.04 rows=270 loops=1)
+                        -> Index lookup on l using fk_listing_nbhd (neighbourhood_id = n.neighbourhood_id)  (cost=44.2 rows=177) (actual time=0.00737..0.0724 rows=162 loops=270)
+

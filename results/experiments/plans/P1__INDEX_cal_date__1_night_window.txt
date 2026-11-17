@@ -1,0 +1,23 @@
+-- P1 | config: INDEX(cal_date) | variant: 1 night window
+-- params: {'lo': '2026-10-15', 'hi': '2026-10-15'}
+SELECT listing_id, cal_date, price
+FROM calendar
+WHERE available = 1
+  AND price IS NOT NULL
+  AND cal_date BETWEEN %(lo)s AND %(hi)s
+ORDER BY price
+LIMIT 100
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Limit: 100 row(s)  (cost=21294 rows=100)
+    -> Sort: calendar.price, limit input to 100 row(s) per chunk  (cost=21294 rows=82192)
+        -> Filter: ((calendar.available = 1) and (calendar.price is not null))  (cost=21294 rows=82192)
+            -> Index lookup on calendar using xp_date (cal_date = DATE'2026-10-15')  (cost=21294 rows=82192)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Limit: 100 row(s)  (cost=21294 rows=100) (actual time=44.9..44.9 rows=100 loops=1)
+    -> Sort: calendar.price, limit input to 100 row(s) per chunk  (cost=21294 rows=82192) (actual time=44.9..44.9 rows=100 loops=1)
+        -> Filter: ((calendar.available = 1) and (calendar.price is not null))  (cost=21294 rows=82192) (actual time=7.18..43.4 rows=25185 loops=1)
+            -> Index lookup on calendar using xp_date (cal_date = DATE'2026-10-15')  (cost=21294 rows=82192) (actual time=7.18..42.2 rows=43781 loops=1)
+

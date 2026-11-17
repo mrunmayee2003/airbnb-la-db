@@ -1,0 +1,30 @@
+-- P4 | config: PK(listing_id, amenity_id) only | variant: Venice | Pool
+-- params: {'amenity': 'Pool', 'nbhd': 'Venice', 'min_score': Decimal('4.8'), 'limit': 50}
+SELECT l.listing_id, l.name, l.room_type, l.review_score, l.price
+FROM amenity a
+JOIN listing_amenity la ON la.amenity_id = a.amenity_id
+JOIN listing l          ON l.listing_id = la.listing_id
+JOIN neighbourhood n    ON n.neighbourhood_id = l.neighbourhood_id
+WHERE a.amenity_name = %(amenity)s
+  AND n.name = %(nbhd)s
+  AND l.review_score >= %(min_score)s
+ORDER BY l.review_score DESC, l.price
+LIMIT %(limit)s
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Limit: 50 row(s)  (cost=636 rows=50)
+    -> Nested loop inner join  (cost=636 rows=1491)
+        -> Sort: l.review_score DESC, l.price  (cost=362 rows=1491)
+            -> Filter: (l.review_score >= 4.80)  (cost=362 rows=1491)
+                -> Index lookup on l using fk_listing_nbhd (neighbourhood_id = '238')  (cost=362 rows=1491)
+        -> Single-row covering index lookup on la using PRIMARY (listing_id = l.listing_id, amenity_id = '10')  (cost=0.25 rows=1)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Limit: 50 row(s)  (cost=636 rows=50) (actual time=0.945..1.48 rows=19 loops=1)
+    -> Nested loop inner join  (cost=636 rows=1491) (actual time=0.945..1.48 rows=19 loops=1)
+        -> Sort: l.review_score DESC, l.price  (cost=362 rows=1491) (actual time=0.887..0.917 rows=872 loops=1)
+            -> Filter: (l.review_score >= 4.80)  (cost=362 rows=1491) (actual time=0.0548..0.776 rows=872 loops=1)
+                -> Index lookup on l using fk_listing_nbhd (neighbourhood_id = '238')  (cost=362 rows=1491) (actual time=0.0544..0.725 rows=1491 loops=1)
+        -> Single-row covering index lookup on la using PRIMARY (listing_id = l.listing_id, amenity_id = '10')  (cost=0.25 rows=1) (actual time=603e-6..603e-6 rows=0.0218 loops=872)
+

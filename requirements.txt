@@ -1,0 +1,6 @@
+pandas>=2.1
+pymysql>=1.1
+pymongo>=4.6
+streamlit>=1.40
+altair>=5
+mongomock>=4.1   # only for testing the MongoDB code without a server

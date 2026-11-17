@@ -1,0 +1,30 @@
+-- W | config: baseline | variant: Q3
+-- params: {'limit': 20}
+SELECT h.host_id, h.host_since, h.is_superhost,
+       COUNT(l.listing_id)      AS la_listings,
+       h.source_listings_count  AS source_listings_count
+FROM listing l
+JOIN host h ON h.host_id = l.host_id
+GROUP BY h.host_id
+ORDER BY la_listings DESC
+LIMIT %(limit)s
+
+-- EXPLAIN FORMAT=TREE (estimated)
+-> Limit: 20 row(s)
+    -> Sort: la_listings DESC, limit input to 20 row(s) per chunk
+        -> Stream results  (cost=23963 rows=21505)
+            -> Group aggregate: count(l.listing_id)  (cost=23963 rows=21505)
+                -> Nested loop inner join  (cost=12528 rows=49628)
+                    -> Index scan on h using PRIMARY  (cost=2175 rows=21505)
+                    -> Covering index lookup on l using fk_listing_host (host_id = h.host_id)  (cost=0.251 rows=2.31)
+
+
+-- EXPLAIN ANALYZE (last run)
+-> Limit: 20 row(s)  (actual time=18.9..18.9 rows=20 loops=1)
+    -> Sort: la_listings DESC, limit input to 20 row(s) per chunk  (actual time=18.9..18.9 rows=20 loops=1)
+        -> Stream results  (cost=23963 rows=21505) (actual time=0.119..18.2 rows=20912 loops=1)
+            -> Group aggregate: count(l.listing_id)  (cost=23963 rows=21505) (actual time=0.119..16.9 rows=20912 loops=1)
+                -> Nested loop inner join  (cost=12528 rows=49628) (actual time=0.118..15.5 rows=43781 loops=1)
+                    -> Index scan on h using PRIMARY  (cost=2175 rows=21505) (actual time=0.117..1.86 rows=20912 loops=1)
+                    -> Covering index lookup on l using fk_listing_host (host_id = h.host_id)  (cost=0.251 rows=2.31) (actual time=391e-6..543e-6 rows=2.09 loops=20912)
+
